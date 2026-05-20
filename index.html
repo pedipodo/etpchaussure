@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionnaire - Éducation Thérapeutique : Chaussure et Diabète</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .section {
+            margin: 20px 0;
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        video {
+            width: 100%;
+            max-height: 500px;
+            margin: 20px 0;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Questionnaire - Éducation Thérapeutique : Chaussure et Diabète</h1>
+
+    <!-- Étape 1 : Pré-questionnaire -->
+    <div id="step1" class="section active">
+        <h2>Merci de répondre à ces 2 questions</h2>
+        <form id="initialForm">
+            <p>
+                <label><strong>1. Vous êtes :</strong></label><br>
+                <input type="radio" name="profil" value="Patient atteint de diabète" required> Patient atteint de diabète<br>
+                <input type="radio" name="profil" value="Professionnel de santé" required> Professionnel de santé<br>
+                <input type="radio" name="profil" value="Autre" required> Autre
+            </p>
+            <p>
+                <label><strong>2. Avez-vous déjà vu cette vidéo ?</strong></label><br>
+                <input type="radio" name="vuVideo" value="Non" required> Non<br>
+                <input type="radio" name="vuVideo" value="Oui et je veux la revoir" required> Oui et je veux la revoir
+            </p>
+            <button type="submit">Valider</button>
+            <p class="error" id="error1"></p>
+        </form>
+    </div>
+
+    <!-- Étape 2 : Vidéo -->
+    <div id="step2-video" class="section">
+        <h2>Vidéo éducative</h2>
+        <!-- Intégration de TA vidéo hébergée sur GitHub -->
+        <video id="videoPlayer" controls width="100%">
+            <source src="Vidéo ETP Chaussure et Diabète.mp4" type="video/mp4">
+            Votre navigateur ne supporte pas la vidéo. <a href="Vidéo ETP Chaussure et Diabète.mp4">Téléchargez-la ici</a>.
+        </video>
+        <p class="error" id="videoError"></p>
+    </div>
+
+    <!-- Étape 3 : Post-questionnaire (uniquement si a_deja_vu="Non") -->
+    <div id="step3-post" class="section">
+        <h2>Post-questionnaire</h2>
+        <form id="postForm">
+            <p>
+                <label><strong>4. Avez-vous appris des choses en visionnant cette vidéo ?</strong></label><br>
+                <input type="radio" name="appris" value="Oui" required> Oui<br>
+                <input type="radio" name="appris" value="Non" required> Non
+            </p>
+            <p>
+                <label><strong>5. Avez-vous aimé cette vidéo ? (0 = pas du tout, 10 = absolument)</strong></label><br>
+                <input type="number" name="aime" min="0" max="10" required>
+            </p>
+            <p>
+                <label><strong>6. Avez-vous un commentaire à faire pour améliorer cette vidéo ? (facultatif, max 200 caractères)</strong></label><br>
+                <textarea name="commentaire" maxlength="200" placeholder="Votre commentaire..."></textarea>
+            </p>
+            <button type="submit">Envoyer</button>
+            <p class="error" id="error2"></p>
+        </form>
+    </div>
+
+    <!-- Étape 4 : Message de fin -->
+    <div id="step4-end" class="section">
+        <h2>Merci pour votre participation !</h2>
+        <p>Vos réponses ont été enregistrées.</p>
+        <div id="exportButtons"></div>
+    </div>
+
+    <script>
+        // Variables globales pour stocker les réponses
+        let responses = {
+            id: self.crypto.randomUUID(), // ID unique pour la session
+            user_id: localStorage.getItem('user_id') || self.crypto.randomUUID(), // ID anonyme pour tracker les retours
+            date: new Date().toISOString(),
+            profil: "",
+            a_deja_vu: "",
+            duree_visionnage: 0,
+            a_terminé: false,
+            moment_abandon: null,
+            a_appris: null,
+            a_aime: null,
+            commentaire: null,
+            type: ""
+        };
+        // Sauvegarde l'user_id dans localStorage pour les prochaines visites
+        localStorage.setItem('user_id', responses.user_id);
+
+        // 1. Gère le pré-questionnaire
+        document.getElementById("initialForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            responses.profil = document.querySelector('input[name="profil"]:checked').value;
+            responses.a_deja_vu = document.querySelector('input[name="vuVideo"]:checked').value;
+            responses.type = responses.a_deja_vu === "Non" ? "premiere_fois" : "revision";
+
+            // Cache l'étape 1
+            document.getElementById("step1").classList.remove("active");
+            // Affiche la vidéo
+            document.getElementById("step2-video").classList.add("active");
+
+            // Initialise le tracking de la vidéo
+            initVideoTracking();
+        });
+
+        // 2. Initialise le tracking de la vidéo (balise HTML5 <video>)
+        function initVideoTracking() {
+            const video = document.getElementById("videoPlayer");
+
+            video.addEventListener("play", () => {
+                console.log("Vidéo démarrée");
+            });
+
+            video.addEventListener("pause", () => {
+                responses.moment_abandon = Math.round(video.currentTime);
+                responses.duree_visionnage = responses.moment_abandon;
+                console.log(`Abandon à ${responses.moment_abandon} secondes`);
+            });
+
+            video.addEventListener("ended", () => {
+                responses.duree_visionnage = Math.round(video.duration);
+                responses.a_terminé = true;
+                responses.moment_abandon = null;
+                console.log("Vidéo terminée");
+
+                // Lance automatiquement le post-questionnaire si c'est la première fois
+                if (responses.type === "premiere_fois") {
+                    document.getElementById("step2-video").classList.remove("active");
+                    document.getElementById("step3-post").classList.add("active");
+                }
+            });
+
+            video.addEventListener("timeupdate", () => {
+                // Met à jour la durée en temps réel (optionnel)
+                responses.duree_visionnage = Math.round(video.currentTime);
+            });
+
+            // Gère la fermeture de l'onglet
+            window.addEventListener("beforeunload", () => {
+                if (!video.paused && !video.ended) {
+                    responses.moment_abandon = Math.round(video.currentTime);
+                    responses.duree_visionnage = responses.moment_abandon;
+                    localStorage.setItem('pending_response', JSON.stringify(responses));
+                }
+            });
+        }
+
+        // 3. Gère le post-questionnaire
+        document.getElementById("postForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            responses.a_appris = document.querySelector('input[name="appris"]:checked').value;
+            responses.a_aime = parseInt(document.querySelector('input[name="aime"]').value);
+            responses.commentaire = document.querySelector('textarea[name="commentaire"]').value;
+
+            // Sauvegarde dans localStorage
+            localStorage.setItem('pending_response', JSON.stringify(responses));
+
+            // Affiche le message de fin
+            document.getElementById("step3-post").classList.remove("active");
+            document.getElementById("step4-end").classList.add("active");
+
+            // Affiche les boutons d'export
+            displayExportButtons();
+        });
+
+        // 4. Affiche les boutons d'export
+        function displayExportButtons() {
+            const exportDiv = document.getElementById("exportButtons");
+
+            // Bouton pour exporter les réponses
+            const exportButton = document.createElement("button");
+            exportButton.textContent = "Exporter mes réponses";
+            exportButton.onclick = exportResponses;
+            exportDiv.appendChild(exportButton);
+
+            // Bouton pour effacer les réponses
+            const clearButton = document.createElement("button");
+            clearButton.textContent = "Effacer mes réponses";
+            clearButton.onclick = clearResponses;
+            exportDiv.appendChild(clearButton);
+        }
+
+        // 5. Exporte les réponses en JSON
+        function exportResponses() {
+            const data = localStorage.getItem('pending_response');
+            if (data) {
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `reponses_${responses.user_id}_${responses.date}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } else {
+                alert("Aucune réponse à exporter.");
+            }
+        }
+
+        // 6. Efface les réponses
+        function clearResponses() {
+            localStorage.removeItem('pending_response');
+            alert("Réponses effacées.");
+        }
+    </script>
+</body>
+</html>
