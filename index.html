@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Questionnaire - Éducation Thérapeutique : Chaussure et Diabète</title>
+    <title>Video ETP chaussage et diabète grade 0/1</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -47,10 +47,14 @@
             color: red;
             font-size: 14px;
         }
+        #endMessage {
+            margin-top: 20px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
-    <h1>Questionnaire - Éducation Thérapeutique : Chaussure et Diabète</h1>
+    <h1>Questionnaire avant la vidéo : Merci de remplir les 2 items et de valider pour accéder à la vidéo</h1>
 
     <!-- Étape 1 : Pré-questionnaire -->
     <div id="step1" class="section active">
@@ -75,15 +79,17 @@
     <!-- Étape 2 : Vidéo -->
     <div id="step2-video" class="section">
         <h2>Vidéo éducative</h2>
-        <!-- Intégration de TA vidéo hébergée sur GitHub -->
         <video id="videoPlayer" controls width="100%">
             <source src="Vidéo ETP Chaussure et Diabète.mp4" type="video/mp4">
             Votre navigateur ne supporte pas la vidéo. <a href="Vidéo ETP Chaussure et Diabète.mp4">Téléchargez-la ici</a>.
         </video>
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="finishVideoBtn" style="display: none;">J’ai terminé la vidéo</button>
+        </div>
         <p class="error" id="videoError"></p>
     </div>
 
-    <!-- Étape 3 : Post-questionnaire (uniquement si a_deja_vu="Non") -->
+    <!-- Étape 3 : Post-questionnaire -->
     <div id="step3-post" class="section">
         <h2>Post-questionnaire</h2>
         <form id="postForm">
@@ -109,14 +115,14 @@
     <div id="step4-end" class="section">
         <h2>Merci pour votre participation !</h2>
         <p>Vos réponses ont été enregistrées.</p>
-        <div id="exportButtons"></div>
+        <div id="endMessage"></div>
     </div>
 
     <script>
         // Variables globales pour stocker les réponses
         let responses = {
-            id: self.crypto.randomUUID(), // ID unique pour la session
-            user_id: localStorage.getItem('user_id') || self.crypto.randomUUID(), // ID anonyme pour tracker les retours
+            id: self.crypto.randomUUID(),
+            user_id: localStorage.getItem('user_id') || self.crypto.randomUUID(),
             date: new Date().toISOString(),
             profil: "",
             a_deja_vu: "",
@@ -128,7 +134,6 @@
             commentaire: null,
             type: ""
         };
-        // Sauvegarde l'user_id dans localStorage pour les prochaines visites
         localStorage.setItem('user_id', responses.user_id);
 
         // 1. Gère le pré-questionnaire
@@ -138,53 +143,55 @@
             responses.a_deja_vu = document.querySelector('input[name="vuVideo"]:checked').value;
             responses.type = responses.a_deja_vu === "Non" ? "premiere_fois" : "revision";
 
-            // Cache l'étape 1
             document.getElementById("step1").classList.remove("active");
-            // Affiche la vidéo
             document.getElementById("step2-video").classList.add("active");
-
-            // Initialise le tracking de la vidéo
             initVideoTracking();
         });
 
-        // 2. Initialise le tracking de la vidéo (balise HTML5 <video>)
+        // 2. Initialise le tracking de la vidéo
         function initVideoTracking() {
             const video = document.getElementById("videoPlayer");
+            const finishBtn = document.getElementById("finishVideoBtn");
 
-            video.addEventListener("play", () => {
-                console.log("Vidéo démarrée");
-            });
-
-            video.addEventListener("pause", () => {
-                responses.moment_abandon = Math.round(video.currentTime);
-                responses.duree_visionnage = responses.moment_abandon;
-                console.log(`Abandon à ${responses.moment_abandon} secondes`);
-            });
-
+            // Affiche le bouton "J’ai terminé la vidéo" à la fin
             video.addEventListener("ended", () => {
+                finishBtn.style.display = "block";
+            });
+
+            // Gère le clic sur le bouton "J’ai terminé la vidéo"
+            finishBtn.addEventListener("click", () => {
                 responses.duree_visionnage = Math.round(video.duration);
                 responses.a_terminé = true;
                 responses.moment_abandon = null;
-                console.log("Vidéo terminée");
 
-                // Lance automatiquement le post-questionnaire si c'est la première fois
                 if (responses.type === "premiere_fois") {
+                    // Cas 1 : Post-questionnaire complet
                     document.getElementById("step2-video").classList.remove("active");
                     document.getElementById("step3-post").classList.add("active");
+                } else {
+                    // Cas 2 : Redirection vers la Fédération des Diabétiques
+                    document.getElementById("step2-video").classList.remove("active");
+                    document.getElementById("step4-end").classList.add("active");
+                    document.getElementById("endMessage").innerHTML = `
+                        <p>Merci d’avoir revu la vidéo. Pour aller plus loin, visitez :
+                        <a href="https://www.federationdesdiabetiques.org/" target="_blank">Fédération des Diabétiques</a>.
+                        </p>
+                    `;
+                    sendToGoogleForm();
                 }
             });
 
-            video.addEventListener("timeupdate", () => {
-                // Met à jour la durée en temps réel (optionnel)
-                responses.duree_visionnage = Math.round(video.currentTime);
-            });
-
-            // Gère la fermeture de l'onglet
-            window.addEventListener("beforeunload", () => {
+            // Gère la fermeture de l'onglet (Cas 3)
+            window.addEventListener("beforeunload", (e) => {
                 if (!video.paused && !video.ended) {
-                    responses.moment_abandon = Math.round(video.currentTime);
-                    responses.duree_visionnage = responses.moment_abandon;
-                    localStorage.setItem('pending_response', JSON.stringify(responses));
+                    e.preventDefault();
+                    e.returnValue = '';
+                    if (confirm("Voulez-vous réellement nous quitter ?")) {
+                        responses.moment_abandon = Math.round(video.currentTime);
+                        responses.a_terminé = false;
+                        sendToGoogleForm();
+                    }
+                    return false;
                 }
             });
         }
@@ -195,55 +202,37 @@
             responses.a_appris = document.querySelector('input[name="appris"]:checked').value;
             responses.a_aime = parseInt(document.querySelector('input[name="aime"]').value);
             responses.commentaire = document.querySelector('textarea[name="commentaire"]').value;
+            responses.a_terminé = true;
 
-            // Sauvegarde dans localStorage
-            localStorage.setItem('pending_response', JSON.stringify(responses));
-
-            // Affiche le message de fin
-            document.getElementById("step3-post").classList.remove("active");
-            document.getElementById("step4-end").classList.add("active");
-
-            // Affiche les boutons d'export
-            displayExportButtons();
+            sendToGoogleForm();
         });
 
-        // 4. Affiche les boutons d'export
-        function displayExportButtons() {
-            const exportDiv = document.getElementById("exportButtons");
+        // 4. Envoie les données à Google Form
+        function sendToGoogleForm() {
+            // Encode les réponses
+            const userIdEncoded = encodeURIComponent(responses.user_id);
+            const profilEncoded = encodeURIComponent(responses.profil);
+            const vuVideoEncoded = encodeURIComponent(responses.a_deja_vu);
+            const termineEncoded = encodeURIComponent(responses.a_terminé ? "Oui" : "Non");
+            const momentAbandonEncoded = responses.moment_abandon ? encodeURIComponent(responses.moment_abandon) : "";
+            const apprisEncoded = responses.a_appris ? encodeURIComponent(responses.a_appris) : "Sans réponse";
+            const aimeEncoded = responses.a_aime ? encodeURIComponent(responses.a_aime) : "Sans réponse";
+            const commentaireEncoded = responses.commentaire ? encodeURIComponent(responses.commentaire) : "Sans réponse";
 
-            // Bouton pour exporter les réponses
-            const exportButton = document.createElement("button");
-            exportButton.textContent = "Exporter mes réponses";
-            exportButton.onclick = exportResponses;
-            exportDiv.appendChild(exportButton);
+            // URL avec les IDs de ton Google Form
+            const googleFormUrl = `https://docs.google.com/forms/d/e/1FAIpQLSdjkCSNEltDVjI2OOI8b7ENLBBYWBNBrumnOomcdNdSjkNdXw/formResponse?
+                entry.685005304=${userIdEncoded}&
+                entry.406874919=${profilEncoded}&
+                entry.474451157=${vuVideoEncoded}&
+                entry.1394684821=${termineEncoded}&
+                entry.133149919=${momentAbandonEncoded}&
+                entry.613180781=${apprisEncoded}&
+                entry.2077829893=${aimeEncoded}&
+                entry.2077829894=${commentaireEncoded}`;
 
-            // Bouton pour effacer les réponses
-            const clearButton = document.createElement("button");
-            clearButton.textContent = "Effacer mes réponses";
-            clearButton.onclick = clearResponses;
-            exportDiv.appendChild(clearButton);
-        }
-
-        // 5. Exporte les réponses en JSON
-        function exportResponses() {
-            const data = localStorage.getItem('pending_response');
-            if (data) {
-                const blob = new Blob([data], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `reponses_${responses.user_id}_${responses.date}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-            } else {
-                alert("Aucune réponse à exporter.");
-            }
-        }
-
-        // 6. Efface les réponses
-        function clearResponses() {
-            localStorage.removeItem('pending_response');
-            alert("Réponses effacées.");
+            window.open(googleFormUrl, '_blank');
+            document.getElementById("step3-post").classList.remove("active");
+            document.getElementById("step4-end").classList.add("active");
         }
     </script>
 </body>
