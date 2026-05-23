@@ -208,32 +208,28 @@
         });
 
         // 4. Envoie les données à Google Form
-        function sendToGoogleForm() {
-            // Encode les réponses
-            const userIdEncoded = encodeURIComponent(responses.user_id);
-            const profilEncoded = encodeURIComponent(responses.profil);
-            const vuVideoEncoded = encodeURIComponent(responses.a_deja_vu);
-            const termineEncoded = encodeURIComponent(responses.a_terminé ? "Oui" : "Non");
-            const momentAbandonEncoded = responses.moment_abandon ? encodeURIComponent(responses.moment_abandon) : "";
-            const apprisEncoded = responses.a_appris ? encodeURIComponent(responses.a_appris) : "Sans réponse";
-            const aimeEncoded = responses.a_aime ? encodeURIComponent(responses.a_aime) : "Sans réponse";
-            const commentaireEncoded = responses.commentaire ? encodeURIComponent(responses.commentaire) : "Sans réponse";
-
-            // URL avec les IDs de ton Google Form
-            const googleFormUrl = `https://docs.google.com/forms/d/e/1FAIpQLSdjkCSNEltDVjI2OOI8b7ENLBBYWBNBrumnOomcdNdSjkNdXw/formResponse?
-                entry.685005304=${userIdEncoded}&
-                entry.406874919=${profilEncoded}&
-                entry.474451157=${vuVideoEncoded}&
-                entry.1394684821=${termineEncoded}&
-                entry.133149919=${momentAbandonEncoded}&
-                entry.613180781=${apprisEncoded}&
-                entry.2077829893=${aimeEncoded}&
-                entry.2077829894=${commentaireEncoded}`;
-
-            window.open(googleFormUrl, '_blank');
-            document.getElementById("step3-post").classList.remove("active");
-            document.getElementById("step4-end").classList.add("active");
-        }
+            function sendToGoogleForm() {
+                // URL de ta Web App (à remplacer par la tienne)
+                const scriptUrl = "https://script.google.com/macros/s/AKfycbyYnJ1kvEOtw4B2le2FxhUrmYdjz-TjdoJ4z4d8My1rjTgUTJgyNfexeGG5BLMn7DoIFA/exec";
+            
+                const payload = {
+                  user_id: responses.user_id,
+                  profil: responses.profil,
+                  a_deja_vu: responses.a_deja_vu,
+                  a_terminé: responses.a_terminé,
+                  moment_abandon: responses.moment_abandon,
+                  a_appris: responses.a_appris,
+                  a_aime: responses.a_aime,
+                  commentaire: responses.commentaire
+                };
+            
+                // Envoie les données en arrière-plan (même si la page est fermée)
+                navigator.sendBeacon(scriptUrl, JSON.stringify(payload));
+            
+                // Affiche la page de fin
+                document.getElementById("step3-post").classList.remove("active");
+                document.getElementById("step4-end").classList.add("active");
+            }
     </script>
 </body>
 </html>
