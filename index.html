@@ -3,123 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video ETP chaussage et diabète grade 0/1</title>
+    <title>Trouver chaussure à son pied</title>
     <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4fc3f7;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
-            color: #333;
+            color: var(--dark-color);
+            background-color: #f5f7fa;
         }
+
+        .container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-top: 20px;
+            font-size: 22px;
+        }
+
+        .intro-text {
+            background-color: #e8f4fc;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+        }
+
         .section {
             margin: 20px 0;
             display: none;
         }
+
         .section.active {
             display: block;
+            animation: fadeIn 0.5s ease-in-out;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         button {
-            background-color: #4CAF50;
+            background-color: var(--primary-color);
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             cursor: pointer;
             font-size: 16px;
-            margin: 10px 0;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+            box-shadow: var(--box-shadow);
         }
+
         button:hover {
-            background-color: #45a049;
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
         }
+
+        button:active {
+            transform: translateY(0);
+        }
+
         video {
             width: 100%;
             max-height: 500px;
             margin: 20px 0;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
         }
+
         textarea {
             width: 100%;
             height: 100px;
             margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            resize: vertical;
         }
+
         .error {
-            color: red;
+            color: #dc3545;
             font-size: 14px;
+            margin-top: 5px;
         }
+
         #endMessage {
             margin-top: 20px;
             font-size: 16px;
+            text-align: center;
+            padding: 15px;
+            background-color: #d4edda;
+            border-radius: var(--border-radius);
+            color: #155724;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+        }
+
+        .radio-option input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .video-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .btn-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h1>Questionnaire avant la vidéo : Merci de remplir les 2 items et de valider pour accéder à la vidéo</h1>
+    <div class="container">
+        <h1>Trouver chaussure à son pied</h1>
 
-    <!-- Étape 1 : Pré-questionnaire -->
-    <div id="step1" class="section active">
-        <h2>Merci de répondre à ces 2 questions</h2>
-        <form id="initialForm">
-            <p>
-                <label><strong>1. Vous êtes :</strong></label><br>
-                <input type="radio" name="profil" value="Patient atteint de diabète" required> Patient atteint de diabète<br>
-                <input type="radio" name="profil" value="Professionnel de santé" required> Professionnel de santé<br>
-                <input type="radio" name="profil" value="Autre" required> Autre
-            </p>
-            <p>
-                <label><strong>2. Avez-vous déjà vu cette vidéo ?</strong></label><br>
-                <input type="radio" name="vuVideo" value="Non" required> Non<br>
-                <input type="radio" name="vuVideo" value="Oui et je veux la revoir" required> Oui et je veux la revoir
-            </p>
-            <button type="submit">Valider</button>
-            <p class="error" id="error1"></p>
-        </form>
-    </div>
-
-    <!-- Étape 2 : Vidéo -->
-    <div id="step2-video" class="section">
-        <h2>Vidéo éducative : à la fin, merci de cliquer sur "J’ai terminé"</h2>
-        <video id="videoPlayer" controls width="100%">
-            <source src="Vidéo ETP Chaussure et Diabète.mp4" type="video/mp4">
-            Votre navigateur ne supporte pas la vidéo. <a href="Vidéo ETP Chaussure et Diabète.mp4">Téléchargez-la ici</a>.
-        </video>
-        <div style="text-align: center; margin-top: 20px;">
-            <button id="finishVideoBtn" style="display: none;">J’ai terminé la vidéo</button>
+        <div class="intro-text">
+            Ceci est une vidéo d'éducation thérapeutique destinée aux patients atteints de diabète (type 1 ou 2) dont le risque podologique a été gradé 0 ou 1.
+            Pour accéder à la vidéo, merci de répondre aux deux questions ci-dessous.
+            À la fin de la vidéo, vous aurez la possibilité de laisser votre avis et vos commentaires, ce qui serait appréciable pour pouvoir améliorer cette vidéo.
+            <span class="highlight">Toutes les réponses sont complètement anonymes.</span>
         </div>
-        <p class="error" id="videoError"></p>
-    </div>
 
-    <!-- Étape 3 : Post-questionnaire -->
-    <div id="step3-post" class="section">
-        <h2>Post-questionnaire</h2>
-        <form id="postForm">
-            <p>
-                <label><strong>4. Avez-vous appris des choses en visionnant cette vidéo ?</strong></label><br>
-                <input type="radio" name="appris" value="Oui" required> Oui<br>
-                <input type="radio" name="appris" value="Non" required> Non
-            </p>
-            <p>
-                <label><strong>5. Avez-vous aimé cette vidéo ? (0 = pas du tout, 10 = absolument)</strong></label><br>
-                <input type="number" name="aime" min="0" max="10" required>
-            </p>
-            <p>
-                <label><strong>6. Avez-vous un commentaire à faire pour améliorer cette vidéo ? (facultatif, max 200 caractères)</strong></label><br>
-                <textarea name="commentaire" maxlength="200" placeholder="Votre commentaire..."></textarea>
-            </p>
-            <button type="submit">Envoyer</button>
-            <p class="error" id="error2"></p>
-        </form>
-    </div>
+        <!-- Étape 1 : Pré-questionnaire -->
+        <div id="step1" class="section active">
+            <form id="initialForm">
+                <div class="form-group">
+                    <label><strong>1. Vous êtes :</strong></label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="profil" value="Patient atteint de diabète" id="patient" required>
+                            <label for="patient">Patient atteint de diabète</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="profil" value="Professionnel de santé" id="professionnel" required>
+                            <label for="professionnel">Professionnel de santé</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="profil" value="Autre" id="autre" required>
+                            <label for="autre">Autre</label>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Étape 4 : Message de fin -->
-    <div id="step4-end" class="section">
-        <h2>Merci pour votre participation !</h2>
-        <p>Vos réponses ont été enregistrées.</p>
-        <div id="endMessage"></div>
+                <div class="form-group">
+                    <label><strong>2. Avez-vous déjà vu cette vidéo ?</strong></label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="vuVideo" value="Non" id="non" required>
+                            <label for="non">Non</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="vuVideo" value="Oui et je veux la revoir" id="oui" required>
+                            <label for="oui">Oui et je veux la revoir</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <button type="submit">Valider</button>
+                </div>
+                <p class="error" id="error1"></p>
+            </form>
+        </div>
+
+        <!-- Étape 2 : Vidéo -->
+        <div id="step2-video" class="section">
+            <h2>Vidéo éducative : à la fin, merci de cliquer sur "J'ai terminé"</h2>
+            <div class="video-container">
+                <video id="videoPlayer" controls width="100%">
+                    <source src="Vidéo ETP Chaussure et Diabète.mp4" type="video/mp4">
+                    Votre navigateur ne supporte pas la vidéo. <a href="Vidéo ETP Chaussure et Diabète.mp4">Téléchargez-la ici</a>.
+                </video>
+                <div class="btn-container">
+                    <button id="finishVideoBtn" style="display: none;">J'ai terminé la vidéo</button>
+                </div>
+            </div>
+            <p class="error" id="videoError"></p>
+        </div>
+
+        <!-- Étape 3 : Post-questionnaire -->
+        <div id="step3-post" class="section">
+            <h2>Post-questionnaire</h2>
+            <form id="postForm">
+                <div class="form-group">
+                    <label><strong>4. Avez-vous appris des choses en visionnant cette vidéo ?</strong></label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="appris" value="Oui" id="appris-oui" required>
+                            <label for="appris-oui">Oui</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="appris" value="Non" id="appris-non" required>
+                            <label for="appris-non">Non</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><strong>5. Avez-vous aimé cette vidéo ? (0 = pas du tout, 10 = absolument)</strong></label>
+                    <input type="number" name="aime" min="0" max="10" required>
+                </div>
+
+                <div class="form-group">
+                    <label><strong>6. Avez-vous un commentaire à faire pour améliorer cette vidéo ? (facultatif, max 200 caractères)</strong></label>
+                    <textarea name="commentaire" maxlength="200" placeholder="Votre commentaire..."></textarea>
+                </div>
+
+                <div class="btn-container">
+                    <button type="submit">Envoyer</button>
+                </div>
+                <p class="error" id="error2"></p>
+            </form>
+        </div>
+
+        <!-- Étape 4 : Message de fin -->
+        <div id="step4-end" class="section">
+            <h2>Merci pour votre participation !</h2>
+            <p>Vos réponses ont été enregistrées.</p>
+            <div id="endMessage"></div>
+        </div>
     </div>
 
     <script>
-        // URL du script Apps Script (à ne pas modifier)
+        // URL du script Apps Script
         const scriptUrl = "https://script.google.com/macros/s/AKfycbxYPaVXjntxTL_6RuQ5R8v2ZirSEFxq7OwZuxGSYAm0FHNdREfoLxNBYePo_cPnstLRyQ/exec";
 
         // Variables globales pour stocker les réponses
@@ -156,12 +332,12 @@
             const video = document.getElementById("videoPlayer");
             const finishBtn = document.getElementById("finishVideoBtn");
 
-            // Affiche le bouton "J’ai terminé la vidéo" à la fin
+            // Affiche le bouton "J'ai terminé la vidéo" à la fin
             video.addEventListener("ended", () => {
                 finishBtn.style.display = "block";
             });
 
-            // Gère le clic sur le bouton "J’ai terminé la vidéo"
+            // Gère le clic sur le bouton "J'ai terminé la vidéo"
             finishBtn.addEventListener("click", () => {
                 responses.duree_visionnage = Math.round(video.duration);
                 responses.a_terminé = true;
@@ -172,12 +348,12 @@
                     document.getElementById("step2-video").classList.remove("active");
                     document.getElementById("step3-post").classList.add("active");
                 } else {
-                    // Cas 2 : Redirection vers la Fédération des Diabétiques
+                    // Cas 2 : Redirection vers le site spécialisé
                     document.getElementById("step2-video").classList.remove("active");
                     document.getElementById("step4-end").classList.add("active");
                     document.getElementById("endMessage").innerHTML = `
                         <p>Merci d’avoir revu la vidéo. Pour aller plus loin, visitez :
-                        <a href="https://www.federationdesdiabetiques.org/" target="_blank">Fédération des Diabétiques</a>.
+                        <a href="https://santebd.org/le-diabete-le-diabete-cest-quoi" target="_blank">Qu'est-ce que le diabète ?</a>.
                         </p>
                     `;
                     sendToGoogleSheet();
@@ -243,4 +419,3 @@
     </script>
 </body>
 </html>
-</canvaentity
